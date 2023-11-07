@@ -25,6 +25,7 @@
 
 #ifndef NO_ANALYTICS
 #include "decompiler_analytics.dl"
+#include "test.dl"
 #endif
 
 #ifdef DEBUG

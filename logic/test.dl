@@ -1,0 +1,6 @@
+.decl Analytics_Jumpsaaa(block: Block)
+.output Analytics_Jumpsaaa
+
+Analytics_Jumpsaaa(block) :-
+  postTrans.BasicBlock_Tail(block, tail),
+  postTrans.IsJump(tail).
