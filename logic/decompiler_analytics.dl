@@ -15,6 +15,12 @@ Analytics_Jumps(block) :-
   postTrans.BasicBlock_Tail(block, tail),
   postTrans.IsJump(tail).
 
+.decl Analytics_Jumpssss(block: Block)
+.output Analytics_Jumpssss
+
+Analytics_Jumpssss(block) :-
+  postTrans.BasicBlock_Tail(block, tail),
+  postTrans.IsJump(tail).
 
 /**
   Main reachability metrics
