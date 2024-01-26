@@ -165,6 +165,12 @@ Analytics_Block_TimesInContexts(block, timesInContext):-
   GloballyReachableBlocks(block),
   timesInContext = count : { global.sens.ContextContainsBlock(_, block, _) }.
 
+.decl Analytics_PublicFunction_Contexts(pubFun: symbol, contexts: number)
+.output Analytics_PublicFunction_Contexts
+
+Analytics_PublicFunction_Contexts(pubFun, contexts):-
+  global.sens.Context_PublicFunction(_, pubFun),
+  contexts = count: global.sens.Context_PublicFunction(_, pubFun).
 
 .decl Verbatim_BlocksReachabilityMetric(blocks: number, totalReach: number, avg: float)
 .output Verbatim_BlocksReachabilityMetric
@@ -495,3 +501,10 @@ Analytics_BlocksLocalOrNot(block1, block2) :-
    IRInFunction(block1, fun1),
    IRInFunction(block2, fun2),
    fun1 != fun2.
+
+
+.decl Analytics_NeedToAddCtxAtEdge(from: Block, to: Block)
+.output Analytics_NeedToAddCtxAtEdge
+
+Analytics_NeedToAddCtxAtEdge(from, to):-
+  global.NeedToAddCtxAtEdge(from, to).

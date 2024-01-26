@@ -246,6 +246,14 @@
     In_Statement_Opcode(callStmt, "CALLPRIVATE"),
     In_Statement_OriginalStatement(callStmt, originalCall).
 
+  Out_Statement_InlineInfo(outStmt, functionList):-
+    In_Statement_InlineInfo(inStmt, functionList),
+    InStatement_OutStatement(inStmt, "", outStmt).
+
+  Out_Statement_InlineInfo(outStmt, [inlinedFun, functionList]):-
+    In_Statement_InlineInfo(inStmt, functionList),
+    StatementToClone(inStmt, inlinedFun, _, _, outStmt).
+
   Out_OriginalStatement_Block(stmt, outBlock):-
     In_OriginalStatement_Block(stmt, inBlock),
     InBlock_OutBlock(inBlock, _, outBlock).
@@ -391,8 +399,15 @@
     InStatement_OutStatement(inStmt, same, outStmt),
     InVar_OutVar(inVar, same, outVar),
     !ClonedCallRets(_, _, _, _, inVar, _),
+    !CallToClonedFunction(_, inStmt, _),
     !ClonedCallRets(_, inStmt, _, _, _, _),
     !ClonedCallRets(_, _, _, inStmt, _, _).
+
+  Out_Statement_Uses(outStmt, outVar, 0):-
+    CallToClonedFunction(_, inStmt, _),
+    In_Statement_Uses(inStmt, inVar, 0),
+    InStatement_OutStatement(inStmt, "", outStmt),
+    InVar_OutVar(inVar, "", outVar).
 
   Out_Statement_Uses(outStmt, outVar, i):-
     In_Statement_Uses(inStmt, actualRet, i),
@@ -414,21 +429,29 @@
     In_Statement_Uses(retJump, jumpTargetVar, 0),
     InStatement_OutStatement(retJump, callerBlock, outRetJump),
     InVar_OutVar(jumpTargetVar, callerBlock, outJumpTargetVar).
-  
-  Out_Variable_BlockValue(outVar, outVal):-
-    In_Variable_BlockValue(inVar, inVal),
+
+  .decl In_VariableHoldsJumpdest(inVar: Variable)
+  In_VariableHoldsJumpdest(inVar):-
     In_Statement_Uses(inJump, inVar, 0),
     In_Statement_Opcode(inJump, opcode),
-    (opcode = "JUMP" ; opcode = "JUMPI"),
+    (opcode = "JUMP" ; opcode = "JUMPI").
+
+  // The last arg to a private call is the return address
+  In_VariableHoldsJumpdest(inVar):-
+    In_Statement_Uses(inCall, inVar, n),
+    In_Statement_Opcode(inCall, "CALLPRIVATE"),
+    !In_Statement_Uses(inCall, _, n + 1).
+
+  Out_Variable_BlockValue(outVar, outVal):-
+    In_Variable_BlockValue(inVar, inVal),
+    In_VariableHoldsJumpdest(inVar),
     InVar_OutVar(inVar, callerBlock, outVar),
     callerBlock != "",
     outVal = cat(cat(inVal, "B"), callerBlock).
-  
+
   Out_Variable_BlockValue(outVar, inVal):-
     In_Variable_BlockValue(inVar, inVal),
-    In_Statement_Uses(inJump, inVar, 0),
-    In_Statement_Opcode(inJump, opcode),
-    (opcode = "JUMP" ; opcode = "JUMPI"),
+    In_VariableHoldsJumpdest(inVar),
     InVar_OutVar(inVar, "", outVar).
  
 
